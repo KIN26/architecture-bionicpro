@@ -24,6 +24,9 @@
         "email": "user1@example.com",
         "firstName": "User",
         "lastName": "One",
+        "attributes": {
+          "customer_id": ["1"]
+        },
         "credentials": [
           {
             "type": "password",
@@ -39,6 +42,9 @@
         "email": "user2@example.com",
         "firstName": "User",
         "lastName": "Two",
+        "attributes": {
+          "customer_id": ["2"]
+        },
         "credentials": [
           {
             "type": "password",
@@ -123,6 +129,20 @@
           "pkce.code.challenge.method": "S256"
         },
         "protocolMappers": [
+          {
+            "name": "customer_id",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-usermodel-attribute-mapper",
+            "consentRequired": false,
+            "config": {
+              "user.attribute": "customer_id",
+              "claim.name": "customer_id",
+              "jsonType.label": "String",
+              "id.token.claim": "true",
+              "access.token.claim": "true",
+              "userinfo.token.claim": "true"
+            }
+          },
           {
             "name": "email",
             "protocol": "openid-connect",

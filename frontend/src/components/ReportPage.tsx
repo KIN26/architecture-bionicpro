@@ -34,17 +34,17 @@ const ReportPage: React.FC = () => {
         throw new Error('Failed to download report');
       }
 
-      const blob = await response.blob();
+      const reportData = await response.json();
+      const jsonString = JSON.stringify(reportData, null, 2); // null, 2 для красивого форматирования
+      const blob = new Blob([jsonString], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.style.display = 'none';
       a.href = url;
-      a.download = 'prosthesis_report.pdf';
+      a.download = `prosthesis_report_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
