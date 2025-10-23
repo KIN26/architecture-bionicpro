@@ -6,6 +6,14 @@ const ReportPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const loginWithPKCE = () => {
+    if (keycloak) {
+      keycloak.login({
+        action: 'login'
+      });
+    }
+  };
+
   const downloadReport = async () => {
     if (!keycloak?.token) {
       setError('Not authenticated');
@@ -22,7 +30,30 @@ const ReportPage: React.FC = () => {
         }
       });
 
-      
+      if (!response.ok) {
+	    let errorMessage = 'Failed to download report';
+		try {
+			const errorData = await response.json();
+			if (errorData.detail) {
+	            errorMessage = errorData.detail;
+	        }
+	        throw new Error(errorMessage);
+	    } catch (e) {
+			throw new Error(errorMessage);
+		}
+      }
+
+      const reportData = await response.json();
+      const jsonString = JSON.stringify(reportData, null, 2); // null, 2 для красивого форматирования
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prosthesis_report_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -31,17 +62,17 @@ const ReportPage: React.FC = () => {
   };
 
   if (!initialized) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-gray-100">Loading...</div>;
   }
 
   if (!keycloak.authenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <button
-          onClick={() => keycloak.login()}
+          onClick={loginWithPKCE}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          Login
+          Login with PKCE
         </button>
       </div>
     );
@@ -51,7 +82,11 @@ const ReportPage: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6">Usage Reports</h1>
-        
+
+        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+          Authenticated as: {keycloak.tokenParsed?.email || keycloak.tokenParsed?.preferred_username}
+        </div>
+
         <button
           onClick={downloadReport}
           disabled={loading}
@@ -60,6 +95,13 @@ const ReportPage: React.FC = () => {
           }`}
         >
           {loading ? 'Generating Report...' : 'Download Report'}
+        </button>
+
+        <button
+          onClick={() => keycloak.logout()}
+          className="mt-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full"
+        >
+          Logout
         </button>
 
         {error && (

@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["zhuyov nikita <nik_4design@icloud.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.119.0"
+pydantic = "^2.12.3"
+clickhouse-driver = "^0.2.9"
+uvicorn = "^0.38.0"
+httpx = "^0.28.1"
+python-jose = "^3.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
