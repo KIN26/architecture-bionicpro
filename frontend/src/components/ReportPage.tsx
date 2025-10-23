@@ -31,7 +31,16 @@ const ReportPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to download report');
+	    let errorMessage = 'Failed to download report';
+		try {
+			const errorData = await response.json();
+			if (errorData.detail) {
+	            errorMessage = errorData.detail;
+	        }
+	        throw new Error(errorMessage);
+	    } catch (e) {
+			throw new Error(errorMessage);
+		}
       }
 
       const reportData = await response.json();

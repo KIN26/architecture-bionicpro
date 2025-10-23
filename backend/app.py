@@ -86,7 +86,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Security(secu
             audience=None,
             options={"verify_aud": False}  # Временно отключаем aud проверку
         )
-        return {'customer_id': decoded.get('customer_id')}
+        return {'customer_id': decoded.get('customer_id', 0)}
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token verification failed: {e}") from e
 
@@ -102,6 +102,10 @@ async def get_user_report(
     ch_client: Client = Depends(get_clickhouse_client),
 ):
     customer_id = int(current_user['customer_id'])
+
+    if not customer_id:
+        raise HTTPException(status_code=404, detail="No data available")
+
     query = """
     SELECT report_date, \
            total_events, \
